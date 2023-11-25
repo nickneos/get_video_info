@@ -1,14 +1,9 @@
 import os
-import json
-import csv
 import re
-
 from videoprops import get_video_properties, get_audio_properties
 from pathlib import Path
 
-
-PATH = r"Z:\Videos\Movies"
-EXT = r"\.(?:mp4|mkv|avi|mpe?g|mov)$"
+VALID_EXT_PATTERN = r"\.(?:mp4|mkv|avi|mpe?g|mov)$"
 
 
 class VideoInfo:
@@ -21,8 +16,19 @@ class VideoInfo:
     def __str__(self) -> str:
         return str(vars(self))
 
+    def is_video(self):
+        if Path(self.location).is_file():
+            if re.search(VALID_EXT_PATTERN, self.location, re.IGNORECASE):
+                return True
+        return False
+
     def parse(self):
-        self.size_gb = os.path.getsize(self.location) / 1073741824
+        try:
+            self.size = os.path.getsize(self.location)
+            self.size_gb = os.path.getsize(self.location) / 1073741824
+        except FileNotFoundError:
+            self.size = None
+            self.size_gb = None
 
         try:
             vp = get_video_properties(self.location)
@@ -30,14 +36,17 @@ class VideoInfo:
             self.width = vp["width"]
             self.height = vp["height"]
         except:
-            pass
+            self.video_codec = None
+            self.width = None
+            self.height = None
 
         try:
             ap = get_audio_properties(self.location)
             self.audio_codec = ap["codec_name"]
             self.channels = ap["channels"]
         except:
-            pass
+            self.audio_codec = None
+            self.channels = None
 
     def keys(self):
         return list(vars(self).keys())
@@ -64,7 +73,7 @@ class VideoInfo:
     def height(self, height):
         try:
             self._height = int(height)
-        except ValueError:
+        except (ValueError, TypeError):
             self._height = None
 
     @property
@@ -75,7 +84,7 @@ class VideoInfo:
     def width(self, width):
         try:
             self._width = int(width)
-        except ValueError:
+        except (ValueError, TypeError):
             self._width = None
 
     @property
@@ -86,36 +95,5 @@ class VideoInfo:
     def channels(self, channels):
         try:
             self._channels = channels
-        except ValueError:
+        except (ValueError, TypeError):
             self._channels = None
-
-
-def build_video_data(path):
-    """Returns video info for all videos found recursively in `path` as a list of dicts"""
-    data = []
-
-    # loop through path
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            if re.search(EXT, file, re.IGNORECASE):
-                video_file = os.path.join(root, file)
-                print(video_file)
-                data.append(VideoInfo(video_file))
-    return data
-
-
-def video_data_to_csv(data, csv_out):
-    """outputs `data` to a csv"""
-
-    with open(csv_out, "w", newline="", encoding="utf-8") as csvfile:
-        fieldnames = data[0].keys()
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-        for row in data:
-            writer.writerow(row.to_dict())
-
-
-if __name__ == "__main__":
-    data = build_video_data(PATH)
-    video_data_to_csv(data, "output.csv")
