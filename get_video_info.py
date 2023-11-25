@@ -18,8 +18,11 @@ class VideoInfo:
         self.folder = Path(location).parent
         self.parse()
 
+    def __str__(self) -> str:
+        return str(vars(self))
+
     def parse(self):
-        self.size_gb = round(os.path.getsize(self.location) / 1073741824, 2)
+        self.size_gb = os.path.getsize(self.location) / 1073741824
 
         try:
             vp = get_video_properties(self.location)
@@ -48,15 +51,10 @@ class VideoInfo:
 
     @size_gb.setter
     def size_gb(self, size_gb):
-        self._size_gb = size_gb
-
-    @property
-    def video_codec(self):
-        return self._video_codec
-
-    @video_codec.setter
-    def video_codec(self, video_codec):
-        self._video_codec = video_codec
+        try:
+            self._size_gb = round(size_gb, 2)
+        except TypeError:
+            self._size_gb = None
 
     @property
     def height(self):
@@ -64,7 +62,10 @@ class VideoInfo:
 
     @height.setter
     def height(self, height):
-        self._height = height
+        try:
+            self._height = int(height)
+        except ValueError:
+            self._height = None
 
     @property
     def width(self):
@@ -72,23 +73,10 @@ class VideoInfo:
 
     @width.setter
     def width(self, width):
-        self._width = width
-
-    @property
-    def width(self):
-        return self._width
-
-    @width.setter
-    def width(self, width):
-        self._width = width
-
-    @property
-    def audio_codec(self):
-        return self._audio_codec
-
-    @audio_codec.setter
-    def audio_codec(self, audio_codec):
-        self._audio_codec = audio_codec
+        try:
+            self._width = int(width)
+        except ValueError:
+            self._width = None
 
     @property
     def channels(self):
@@ -96,7 +84,10 @@ class VideoInfo:
 
     @channels.setter
     def channels(self, channels):
-        self._channels = channels
+        try:
+            self._channels = channels
+        except ValueError:
+            self._channels = None
 
 
 def build_video_data(path):
