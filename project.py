@@ -11,13 +11,14 @@ BYTES_IN_GB = 1073741824
 
 
 def main():
-
     # cli arguments
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Get media info for a video file, or for all video files within a folder recursively"
+    )
     parser.add_argument("path", help="full path of video file or folder")
     parser.add_argument("-v", "--video", action="store_true", help="returns video quality")
     parser.add_argument("-a", "--audio", action="store_true", help="returns audio type")
-    parser.add_argument("-c","--csv", help="output to csv file specified")
+    parser.add_argument("-c", "--csv", help="output to csv file", metavar="filename")
 
     args = parser.parse_args()
 
@@ -46,11 +47,11 @@ def video_or_folder(path: str):
     """
     if not Path(path).exists():
         return None
-    
+
     if Path(path).is_file():
         if re.search(VALID_EXT_PATTERN, path, re.IGNORECASE):
             return "Video"
-        
+
     if Path(path).is_dir():
         return "Folder"
 
@@ -86,7 +87,7 @@ def quality_from_res(w: int, h: int):
 
 def audio_type(channels: int):
     """
-    Based on the number of `channels` provided in regards to 
+    Based on the number of `channels` provided in regards to
     a video's audio, return as a string the type of audio
     eg. `"4KUHD"`, `"Stereo"`, `"Surround"`
     """
@@ -125,7 +126,7 @@ def folder_info(path, print_screen=True):
     Returns video info for all videos found recursively in `path` as a list of dicts.
 
     If `print_screen` is set to `True`, prints info to screen as well
-    
+
     """
     data = []
 
