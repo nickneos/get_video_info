@@ -11,46 +11,55 @@ BYTES_IN_GB = 1073741824
 
 
 def main():
+
+    # cli arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="full path of video file or folder")
-    parser.add_argument(
-        "-v", "--video", action="store_true", help="returns video quality"
-    )
+    parser.add_argument("-v", "--video", action="store_true", help="returns video quality")
     parser.add_argument("-a", "--audio", action="store_true", help="returns audio type")
-    parser.add_argument(
-        "-f",
-        "--folder",
-        action="store_true",
-        help="scans all videos in folder recursively",
-    )
+    parser.add_argument("-c","--csv", help="output to csv file specified")
 
     args = parser.parse_args()
 
+    #  check if path is video or folder
     if video_or_folder(args.path) == "Video":
         v = VideoInfo(args.path)
 
         if args.video:
-            print(f"Resolution is {resolution(v.v_width, v.v_height)}")
+            print(f"Resolution is {quality_from_res(v.v_width, v.v_height)}")
         if args.audio:
             print(f"Audio is {audio_type(v.a_channels)}")
         else:
             print(json.dumps(pretty_video_info(v), indent=4))
 
     elif video_or_folder(args.path) == "Folder":
-        folder_info(args.path)
+        data = folder_info(args.path)
+        if args.csv:
+            video_data_to_csv(data, args.csv)
 
 
-def video_or_folder(path):
+def video_or_folder(path: str):
+    """
+    For `path` provided, returns `"Video"` or `"Folder"` if
+    `path` is a video file or folder respectively.
+    Returns `None` otherwise.
+    """
+    if not Path(path).exists():
+        return None
+    
     if Path(path).is_file():
         if re.search(VALID_EXT_PATTERN, path, re.IGNORECASE):
             return "Video"
-        else:
-            return None
+        
     if Path(path).is_dir():
         return "Folder"
 
 
-def resolution(w: int, h: int):
+def quality_from_res(w: int, h: int):
+    """
+    For a video's width `w` and height `h` provided, return as a string
+    the quality of the video resolution eg. `"4KUHD"`
+    """
     try:
         if w <= 792 and h <= 528:
             return "480p"
@@ -76,6 +85,11 @@ def resolution(w: int, h: int):
 
 
 def audio_type(channels: int):
+    """
+    Based on the number of `channels` provided in regards to 
+    a video's audio, return as a string the type of audio
+    eg. `"4KUHD"`, `"Stereo"`, `"Surround"`
+    """
     try:
         if channels == 1:
             return "Mono"
@@ -91,11 +105,15 @@ def audio_type(channels: int):
 
 
 def pretty_video_info(v: VideoInfo):
+    """
+    For the given VideoInfo object `v`, return a selection
+    of information as a dict
+    """
     return {
         "filename": v.filename,
         "folder": v.folder,
         "size_gb": round(os.path.getsize(v.location) / BYTES_IN_GB, 2),
-        "video_quality": resolution(v.v_width, v.v_height),
+        "video_quality": quality_from_res(v.v_width, v.v_height),
         "video_codec": v.v_codec_name,
         "audio_type": audio_type(v.a_channels),
         "audio_codec": v.a_codec_name,
@@ -103,7 +121,12 @@ def pretty_video_info(v: VideoInfo):
 
 
 def folder_info(path, print_screen=True):
-    """Returns video info for all videos found recursively in `path` as a list of dicts"""
+    """
+    Returns video info for all videos found recursively in `path` as a list of dicts.
+
+    If `print_screen` is set to `True`, prints info to screen as well
+    
+    """
     data = []
 
     # loop through path
@@ -119,7 +142,7 @@ def folder_info(path, print_screen=True):
 
 
 def video_data_to_csv(data, csv_out):
-    """outputs `data` to a csv"""
+    """outputs list of dicts of video info `data` to a csv"""
 
     with open(csv_out, "w", newline="", encoding="utf-8") as csvfile:
         fieldnames = data[0].keys()
@@ -127,7 +150,7 @@ def video_data_to_csv(data, csv_out):
         writer.writeheader()
 
         for row in data:
-            writer.writerow(row.to_dict())
+            writer.writerow(row)
 
 
 if __name__ == "__main__":

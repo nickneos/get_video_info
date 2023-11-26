@@ -3,13 +3,13 @@ import os
 
 
 def test_resolution():
-    assert project.resolution(3836, 2072) == "4KUHD"
-    assert project.resolution(1920, 1080) == "1080p"
-    assert project.resolution(1920, 796) == "1080p"
-    assert project.resolution(1280, 720) == "720p"
-    assert project.resolution(720, 400) == "480p"
-    assert project.resolution(10000, 10000) == None
-    assert project.resolution("dog", "cat") == None
+    assert project.quality_from_res(3836, 2072) == "4KUHD"
+    assert project.quality_from_res(1920, 1080) == "1080p"
+    assert project.quality_from_res(1920, 796) == "1080p"
+    assert project.quality_from_res(1280, 720) == "720p"
+    assert project.quality_from_res(720, 400) == "480p"
+    assert project.quality_from_res(10000, 10000) == None
+    assert project.quality_from_res("dog", "cat") == None
 
 
 def test_audio_type():
@@ -25,5 +25,6 @@ def test_audio_type():
 
 def test_video_or_folder():
     assert project.video_or_folder(os.path.dirname(os.path.realpath(__file__))) == "Folder"
+    assert project.video_or_folder(r"c:\path\that\doesnt\exist") == None
     # assert project.video_or_folder(r"c:\path\to\video.mp4") == "Video"
     assert project.video_or_folder(os.path.realpath(__file__)) == None
