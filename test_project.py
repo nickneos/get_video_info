@@ -1,4 +1,5 @@
 import project
+import os
 
 
 def test_resolution():
@@ -20,3 +21,9 @@ def test_audio_type():
     assert project.audio_type(0) == None
     assert project.audio_type(-1) == None
     assert project.audio_type("dog") == None
+
+
+def test_video_or_folder():
+    assert project.video_or_folder(os.path.dirname(os.path.realpath(__file__))) == "Folder"
+    # assert project.video_or_folder(r"c:\path\to\video.mp4") == "Video"
+    assert project.video_or_folder(os.path.realpath(__file__)) == None
