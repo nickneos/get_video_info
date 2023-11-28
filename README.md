@@ -96,14 +96,9 @@ Output:
 }
 ```
 
-Contents of `output.csv`:
+CSV File `output.csv`:
 
-```csv
-filename,folder,size_gb,video_quality,video_codec,audio_type,audio_codec
-sample__1080__libx264__aac__30s__video.mp4,sample_video,0.02,1080p,h264,Stereo,aac
-sample__480__libx264__aac__30s__video.mp4,sample_video,0.01,720p,h264,Stereo,aac
-sample__720__libx264__aac__30s__video.mp4,sample_video,0.01,720p,h264,Stereo,aac
-```
+![output.csv](image.png)
 
 ## Key files in this repo:
 
