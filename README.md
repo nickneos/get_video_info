@@ -8,12 +8,12 @@ I created this as part of my [Final Project](https://cs50.harvard.edu/python/202
 
 
 ## Why I created this?
-I wanted to quick way to scan my video library and see what quality my video files were in (eg. `420p`, `720p`, `1080p`, etc) as well as the type of audio (`stereo`, `surround`, etc) and codecs used. 
+I wanted to quick way to scan my video library and see what quality my video files were in (eg. `420p`, `720p`, `1080p`, etc) as well as the type of audio (`stereo`, `surround`, etc) and codecs used.
 
 The purpose of this was so I could determine which files I had that were `720p` or lower, which I would want to update to at least `1080p`.
 
 
-## Video Demo:  
+## Video Demo:
 ...
 
 
@@ -22,6 +22,13 @@ The purpose of this was so I could determine which files I had that were `720p` 
 - pytest
 
 Can install with `pip install -r requirements.txt`
+
+**NOTE:** For Linux systems, `get-video-properties` requires `ffmpeg` to be installed on system. This can be installed on ubuntu/debian based systems as follows:
+
+```sh
+sudo apt-get update
+sudo apt-get install ffmpeg
+```
 
 ## Usage
 ```sh
