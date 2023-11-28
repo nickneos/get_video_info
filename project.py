@@ -3,6 +3,7 @@ import csv
 import re
 import argparse
 import json
+import sys
 from videoinfo import VideoInfo
 from pathlib import Path
 
@@ -11,32 +12,37 @@ BYTES_IN_GB = 1073741824
 
 
 def main():
-    # cli arguments
-    parser = argparse.ArgumentParser(
-        description="Get media info for a video file, or for all video files within a folder recursively"
-    )
-    parser.add_argument("path", help="full path of video file or folder")
-    parser.add_argument("-v", "--video", action="store_true", help="returns video quality")
-    parser.add_argument("-a", "--audio", action="store_true", help="returns audio type")
-    parser.add_argument("-c", "--csv", help="output to csv file", metavar="filename")
+    args = parse_args()
 
-    args = parser.parse_args()
-
-    #  check if path is video or folder
-    if video_or_folder(args.path) == "Video":
-        v = VideoInfo(args.path)
-
-        if args.video:
-            print(f"Resolution is {quality_from_res(v.v_width, v.v_height)}")
-        if args.audio:
-            print(f"Audio is {audio_type(v.a_channels)}")
-        else:
+    try:
+        #  check if path is video or folder
+        if video_or_folder(args.path) == "Video":
+            v = VideoInfo(args.path)
             print(json.dumps(pretty_video_info(v), indent=4))
 
-    elif video_or_folder(args.path) == "Folder":
-        data = folder_info(args.path)
-        if args.csv:
-            video_data_to_csv(data, args.csv)
+        elif video_or_folder(args.path) == "Folder":
+            data = folder_info(args.path)
+            if args.csv:
+                video_data_to_csv(data, args.csv)
+    
+    except FileNotFoundError:
+        sys.exit(f"{args.path} not found")
+
+
+def pretty_video_info(v: VideoInfo):
+    """
+    For the given VideoInfo object `v`, return a selection
+    of information as a dict
+    """
+    return {
+        "filename": v.filename,
+        "folder": v.folder,
+        "size_gb": round(os.path.getsize(v.location) / BYTES_IN_GB, 2),
+        "video_quality": quality_from_res(v.v_width, v.v_height),
+        "video_codec": v.v_codec_name,
+        "audio_type": audio_type(v.a_channels),
+        "audio_codec": v.a_codec_name,
+    }
 
 
 def video_or_folder(path: str):
@@ -46,7 +52,7 @@ def video_or_folder(path: str):
     Returns `None` otherwise.
     """
     if not Path(path).exists():
-        return None
+        raise FileNotFoundError
 
     if Path(path).is_file():
         if re.search(VALID_EXT_PATTERN, path, re.IGNORECASE):
@@ -105,22 +111,6 @@ def audio_type(channels: int):
         return None
 
 
-def pretty_video_info(v: VideoInfo):
-    """
-    For the given VideoInfo object `v`, return a selection
-    of information as a dict
-    """
-    return {
-        "filename": v.filename,
-        "folder": v.folder,
-        "size_gb": round(os.path.getsize(v.location) / BYTES_IN_GB, 2),
-        "video_quality": quality_from_res(v.v_width, v.v_height),
-        "video_codec": v.v_codec_name,
-        "audio_type": audio_type(v.a_channels),
-        "audio_codec": v.a_codec_name,
-    }
-
-
 def folder_info(path, print_screen=True):
     """
     Returns video info for all videos found recursively in `path` as a list of dicts.
@@ -152,6 +142,19 @@ def video_data_to_csv(data, csv_out):
 
         for row in data:
             writer.writerow(row)
+
+
+def parse_args():
+    # cli arguments
+    parser = argparse.ArgumentParser(
+        description="Get media info for a video file, or for all video files within a folder recursively"
+    )
+    parser.add_argument("path", help="full path of video file or folder")
+    # parser.add_argument("-v", "--video", action="store_true", help="returns video quality")
+    # parser.add_argument("-a", "--audio", action="store_true", help="returns audio type")
+    parser.add_argument("-c", "--csv", help="Output to csv file. Only applies if path is a folder.", metavar="filename")
+
+    return parser.parse_args()
 
 
 if __name__ == "__main__":

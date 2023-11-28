@@ -1,7 +1,8 @@
 import os
+import pytest
 from project import *
 from videoinfo import VideoInfo
-
+from pytest import ExceptionInfo
 
 def test_resolution():
     assert quality_from_res(3836, 2072) == "4KUHD"
@@ -26,12 +27,11 @@ def test_audio_type():
 
 def test_video_or_folder():
     assert video_or_folder("sample_video/") == "Folder"
-    assert (
-        video_or_folder("sample_video/sample__480__libx264__aac__30s__video.mp4")
-        == "Video"
-    )
+    assert video_or_folder("sample_video/sample__480__libx264__aac__30s__video.mp4") == "Video"
     assert video_or_folder(os.path.realpath(__file__)) == None
-    assert video_or_folder("/path/that/doesnt/exist") == None
+    
+    with pytest.raises(FileNotFoundError):
+        video_or_folder("/path/that/doesnt/exist") == None
 
 
 def test_pretty_video_info():
