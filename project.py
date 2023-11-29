@@ -34,15 +34,18 @@ def pretty_video_info(v: VideoInfo):
     For the given VideoInfo object `v`, return a selection
     of information as a dict
     """
-    return {
-        "filename": v.filename,
-        "folder": v.folder,
-        "size_gb": round(os.path.getsize(v.location) / BYTES_IN_GB, 2),
-        "video_quality": quality_from_res(v.v_width, v.v_height),
-        "video_codec": v.v_codec_name,
-        "audio_type": audio_type(v.a_channels),
-        "audio_codec": v.a_codec_name,
-    }
+    try:
+        return {
+            "filename": v.filename,
+            "folder": v.folder,
+            "size_gb": round(os.path.getsize(v.location) / BYTES_IN_GB, 2),
+            "video_quality": quality_from_res(v.v_width, v.v_height),
+            "video_codec": v.v_codec_name,
+            "audio_type": audio_type(v.a_channels),
+            "audio_codec": v.a_codec_name,
+        }
+    except AttributeError:
+        return None
 
 
 def video_or_folder(path: str):
@@ -141,7 +144,8 @@ def video_data_to_csv(data, csv_out):
         writer.writeheader()
 
         for row in data:
-            writer.writerow(row)
+            if row:
+                writer.writerow(row)
 
 
 def parse_args():

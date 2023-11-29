@@ -19,11 +19,16 @@ class VideoInfo:
         except FileNotFoundError:
             self.size = None
 
-        for key, value in get_video_properties(self.location).items():
-            setattr(self, "v_" + key, value)
+        try:
+            for key, value in get_video_properties(self.location).items():
+                setattr(self, "v_" + key, value)
 
-        for key, value in get_audio_properties(self.location).items():
-            setattr(self, "a_" + key, value)
+            for key, value in get_audio_properties(self.location).items():
+                setattr(self, "a_" + key, value)
+        except Exception as e:
+            print("Error getting video info for", self.location)
+            print(e)
+
 
     def __str__(self) -> str:
         return str(json.dumps(vars(self), indent=2))
